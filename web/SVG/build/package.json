@@ -1,0 +1,9 @@
+{
+  "name": "northstar-portal-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Northstar portal bot",
+  "dependencies": {
+    "puppeteer": "^24.43.1"
+  }
+}

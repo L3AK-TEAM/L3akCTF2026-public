@@ -1,0 +1,20 @@
+services:
+  what-who:
+    build:
+      context: .
+    platform: linux/amd64
+    ports:
+      - "${WHATWHO_PORT:-28451}:28451"
+    environment:
+      WHATWHO_FLAG: "${WHATWHO_FLAG:-L3AK{wh4t_4sks_wh0_4nsw3rs}}"
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 128m
+    cpus: 1.0
+    restart: unless-stopped

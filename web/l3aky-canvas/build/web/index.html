@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L3aky Canvas</title>
+<style>
+  :root{
+    --bg:#0b0e14; --surface:#12161f; --surface2:#0e121a; --border:#232a36; --border2:#2c3646;
+    --text:#e6ebf2; --muted:#8a97a8; --faint:#5a6779;
+    --accent:#2ee6c6; --accent-ink:#04120f; --danger:#ff6b7d;
+    --grid-a:#0a0d13; --grid-b:#0d1119; --shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1f6; --surface:#ffffff; --surface2:#f4f6fa; --border:#dde3ec; --border2:#cfd7e3;
+    --text:#16202e; --muted:#586374; --faint:#8a94a3;
+    --accent:#0ea88f; --accent-ink:#ffffff; --danger:#d63b52;
+    --grid-a:#e7ebf1; --grid-b:#dfe4ec; --shadow:0 8px 24px rgba(20,30,50,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:14px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;
+         padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .brand{font-size:19px;font-weight:700;letter-spacing:.2px}
+  .brand b{color:var(--accent)}
+  .brand span{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px}
+  header .spacer{flex:1}
+  .icon-btn{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;cursor:pointer;
+            background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+  .icon-btn:hover{color:var(--accent);border-color:var(--accent)}
+  .icon-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+  [data-theme="light"] .i-sun{display:none}
+  [data-theme="dark"] .i-moon{display:none}
+
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;
+        max-width:1440px;margin:22px auto;padding:0 20px 48px}
+  @media(max-width:820px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:16px}
+  .card h2{margin:0;padding:13px 15px;font-size:12px;text-transform:uppercase;letter-spacing:1px;
+           color:var(--muted);border-bottom:1px solid var(--border)}
+  .card .body{padding:15px}
+
+  .intro{grid-column:1 / -1;margin:0;color:var(--muted);font-size:13px}
+  .intro .kbd{font-family:ui-monospace,monospace;color:var(--accent)}
+
+  .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+  .chip{background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+        padding:6px 13px;border-radius:8px;cursor:pointer;font-size:13px}
+  .chip:hover{border-color:var(--accent)}
+  .chip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+  .grow{display:flex;gap:7px;flex:1;min-width:170px}
+  input[type=text],input[type=password]{background:var(--surface2);border:1px solid var(--border2);
+        border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;font-family:ui-monospace,monospace}
+  input:focus{outline:none;border-color:var(--accent)}
+  .grow input{flex:1;min-width:0}
+  .btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:8px;
+       padding:8px 13px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);
+               font-weight:600;width:100%}
+  .btn.primary:hover{color:var(--accent-ink);filter:brightness(1.06)}
+
+  .stage{display:grid;place-items:center;padding:16px;border-radius:10px;border:1px solid var(--border);
+         background:repeating-conic-gradient(var(--grid-a) 0% 25%, var(--grid-b) 0% 50%) 50%/24px 24px}
+  .cwrap{position:relative;line-height:0;width:100%;max-width:78vh;aspect-ratio:1;cursor:crosshair}
+  #board,#overlay{image-rendering:pixelated;display:block;width:100%;height:100%;border-radius:5px}
+  #overlay{position:absolute;inset:0;pointer-events:none}
+  .readout{position:absolute;left:8px;top:8px;background:var(--surface);border:1px solid var(--border2);
+           border-radius:7px;padding:4px 8px;font:12px/1 ui-monospace,monospace;color:var(--accent);
+           pointer-events:none;opacity:0;transition:opacity .1s}
+  .readout.on{opacity:1}
+  .readout i{width:11px;height:11px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-left:6px;
+             border:1px solid rgba(128,128,128,.4)}
+
+  .foot{display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--muted);font-size:13px}
+  .foot .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);
+        border-radius:999px;padding:5px 12px;font:12px/1 ui-monospace,monospace}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+  .pal-top{display:flex;align-items:center;gap:13px;margin-bottom:13px}
+  .sw-lg{width:52px;height:52px;border-radius:10px;border:1px solid var(--border2)}
+  .pal-top .meta{color:var(--muted);font-size:12px}
+  .pal-top .meta b{display:block;color:var(--text);font-size:19px;font-family:ui-monospace,monospace}
+  .swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:11px}
+  .sw{aspect-ratio:1;border-radius:6px;border:2px solid transparent;cursor:pointer}
+  .sw[aria-pressed="true"]{border-color:var(--accent)}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+
+  .field{margin-bottom:9px}
+  .field label{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+  .field input{width:100%}
+  #loginOut{margin-top:11px}
+  #loginOut h2{font-size:15px;margin:0 0 6px;padding:0;border:0;color:var(--text);text-transform:none;letter-spacing:0}
+  #loginOut pre{white-space:pre-wrap;word-break:break-word;background:var(--surface2);
+        border:1px solid var(--border2);border-radius:8px;padding:10px;margin:8px 0 0;
+        max-height:230px;overflow:auto;font:12px/1.5 ui-monospace,monospace;color:var(--accent)}
+
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+         background:var(--surface);border:1px solid var(--accent);color:var(--text);padding:9px 15px;
+         border-radius:9px;opacity:0;transition:.2s;pointer-events:none;box-shadow:var(--shadow);font-size:13px}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.bad{border-color:var(--danger)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>L3</b>aky Canvas<span>collaborative pixel board</span></div>
+  <div class="spacer"></div>
+  <button id="themeBtn" class="icon-btn" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2 2M17.1 17.1l2 2M19.1 4.9l-2 2M6.9 17.1l-2 2"/></svg>
+    <svg class="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
+</header>
+
+<div class="wrap">
+  <p class="intro">Everyone shares one canvas: paint the 64&times;64 grid together, one
+     pixel per visitor every <span class="kbd" id="introCool">60</span> seconds.</p>
+
+  <div class="card">
+    <h2>Board</h2>
+    <div class="body">
+      <div class="tools">
+        <div id="rooms" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div class="grow">
+          <input type="text" id="roomInput" placeholder="Join private room" spellcheck="false">
+          <button class="btn" id="loadBtn">Join</button>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="cwrap" id="cwrap">
+          <canvas id="board" width="512" height="512"></canvas>
+          <canvas id="overlay" width="512" height="512"></canvas>
+          <div class="readout" id="readout"></div>
+        </div>
+      </div>
+      <div class="foot">
+        <span>room <b id="curName" class="mono" style="color:var(--text)">lobby</b></span>
+        <div class="spacer"></div>
+        <span class="pill"><span class="dot"></span><span id="coolTxt">ready</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Palette</h2>
+      <div class="body">
+        <div class="pal-top">
+          <div class="sw-lg" id="swLg"></div>
+          <div class="meta">shade<b id="shadeVal">0</b></div>
+        </div>
+        <div class="swatches" id="swatches"></div>
+        <input type="range" id="shadeSlider" min="0" max="255" value="0">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Login</h2>
+      <div class="body">
+        <div class="field"><label>username</label><input type="text" id="user" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label>password</label><input type="password" id="pass" autocomplete="off"></div>
+        <button class="btn primary" id="loginBtn">Login</button>
+        <div id="loginOut"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const W = 64, SCALE = 8, GAP = 1;
+const root = document.documentElement;
+const board = document.getElementById('board'), ctx = board.getContext('2d');
+const overlay = document.getElementById('overlay'), octx = overlay.getContext('2d');
+const ROOMS = ['lobby', 'drippy', 'blank'];
+let current = 'lobby', shade = 0, cooldownSecs = 60, coolUntil = 0, coolTimer = null;
+const gray = v => `rgb(${v},${v},${v})`;
+
+function setTheme(t) { root.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+document.getElementById('themeBtn').onclick = () =>
+  setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+
+function toast(msg, bad) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.toggle('bad', !!bad); t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function buildRooms() {
+  const box = document.getElementById('rooms'); box.innerHTML = '';
+  ROOMS.forEach(r => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = r;
+    b.setAttribute('aria-pressed', r === current);
+    b.onclick = () => loadRoom(r); box.appendChild(b);
+  });
+}
+
+function buildPalette() {
+  const box = document.getElementById('swatches'); box.innerHTML = '';
+  [0, 36, 72, 108, 144, 180, 216, 255].forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'sw'; d.style.background = gray(v);
+    d.setAttribute('aria-pressed', v === shade);
+    d.onclick = () => setShade(v); box.appendChild(d);
+  });
+  document.getElementById('swLg').style.background = gray(shade);
+  document.getElementById('shadeVal').textContent = shade;
+}
+function setShade(v) { shade = v; document.getElementById('shadeSlider').value = v; buildPalette(); }
+
+function decodeBMP(buf) {
+  const dv = new DataView(buf);
+  if (dv.getUint16(0, false) !== 0x424d) return null;
+  const off = dv.getUint32(10, true), w = dv.getInt32(18, true), h = dv.getInt32(22, true);
+  const px = new Uint8Array(buf, off, w * h), out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) { const s = (h - 1 - y) * w; for (let x = 0; x < w; x++) out[y * w + x] = px[s + x]; }
+  return { w, h, data: out };
+}
+
+function draw(img) {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, board.width, board.height);
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    ctx.fillStyle = gray(img.data[y * W + x]);
+    ctx.fillRect(x * SCALE, y * SCALE, SCALE - GAP, SCALE - GAP);
+  }
+}
+function drawCell(x, y, v) { ctx.fillStyle = gray(v); ctx.fillRect(x * SCALE, y * SCALE, SCALE - GAP, SCALE - GAP); }
+
+async function loadRoom(name) {
+  if (!name) return;
+  current = name; document.getElementById('curName').textContent = name;
+  buildRooms();
+  try {
+    const buf = await (await fetch('/canvas?room=' + encodeURIComponent(name))).arrayBuffer();
+    const img = decodeBMP(buf); img ? draw(img) : toast('bad canvas', true);
+  } catch (e) { toast('load failed', true); }
+}
+
+function cellFromEvent(e) {
+  const r = board.getBoundingClientRect();
+  return {
+    x: Math.floor((e.clientX - r.left) * (board.width / r.width) / SCALE),
+    y: Math.floor((e.clientY - r.top) * (board.height / r.height) / SCALE),
+  };
+}
+board.addEventListener('mousemove', e => {
+  const { x, y } = cellFromEvent(e);
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  if (x < 0 || y < 0 || x >= W || y >= W) return;
+  octx.strokeStyle = getComputedStyle(root).getPropertyValue('--accent');
+  octx.lineWidth = 1.5; octx.strokeRect(x * SCALE - 1, y * SCALE - 1, SCALE + 1, SCALE + 1);
+  const rd = document.getElementById('readout');
+  rd.classList.add('on'); rd.innerHTML = `x:${x} y:${y} <i style="background:${gray(shade)}"></i>`;
+});
+board.addEventListener('mouseleave', () => {
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  document.getElementById('readout').classList.remove('on');
+});
+
+function startCooldown(secs) {
+  coolUntil = Date.now() + secs * 1000; tick();
+  clearInterval(coolTimer); coolTimer = setInterval(tick, 250);
+}
+function tick() {
+  const left = Math.ceil((coolUntil - Date.now()) / 1000);
+  if (left <= 0) { clearInterval(coolTimer);
+    document.getElementById('coolTxt').textContent = 'ready'; return; }
+  document.getElementById('coolTxt').textContent = 'cooldown ' + left + 's';
+}
+
+board.addEventListener('click', async e => {
+  if (Date.now() < coolUntil) { toast('on cooldown', true); return; }
+  const { x, y } = cellFromEvent(e);
+  if (x < 0 || y < 0 || x >= W || y >= W) return;
+  const res = await fetch('/pixel', { method: 'POST', body: new URLSearchParams({ room: current, x, y, color: shade }) });
+  const msg = (await res.text()).trim();
+  if (res.ok) { drawCell(x, y, shade); toast(`placed (${x}, ${y})`); startCooldown(cooldownSecs); }
+  else { const m = msg.match(/(\d+)s/); startCooldown(m ? +m[1] : cooldownSecs); toast(msg, true); }
+});
+
+async function login() {
+  const res = await fetch('/login', { method: 'POST', body: new URLSearchParams({
+    username: document.getElementById('user').value, password: document.getElementById('pass').value }) });
+  document.getElementById('loginOut').innerHTML = await res.text();
+}
+
+document.getElementById('loadBtn').onclick = () => loadRoom(document.getElementById('roomInput').value);
+document.getElementById('roomInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadRoom(e.target.value); });
+document.getElementById('loginBtn').onclick = login;
+document.getElementById('shadeSlider').addEventListener('input', e => setShade(+e.target.value));
+
+const hashTheme = ['light', 'dark'].includes(location.hash.slice(1)) ? location.hash.slice(1) : null;
+setTheme(hashTheme || localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+buildRooms(); buildPalette();
+(async () => {
+  try { cooldownSecs = (await (await fetch('/config')).json()).cooldown || 60; } catch (e) {}
+  document.getElementById('introCool').textContent = cooldownSecs;
+})();
+loadRoom('lobby');
+</script>
+</body>
+</html>

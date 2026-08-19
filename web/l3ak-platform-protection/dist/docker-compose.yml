@@ -1,0 +1,63 @@
+services:
+  waf0:
+    container_name: l3ak-platform-protection-waf0
+    build:
+      context: .
+      dockerfile: Dockerfile.waf0
+    ports:
+      - "1337:8080"
+    restart: unless-stopped
+
+  waf1:
+    container_name: l3ak-platform-protection-waf1
+    build:
+      context: .
+      dockerfile: Dockerfile.waf1
+    ports:
+      - "1338:8080"
+    restart: unless-stopped
+
+  waf2:
+    container_name: l3ak-platform-protection-waf2
+    build:
+      context: .
+      dockerfile: Dockerfile.waf2
+    ports:
+      - "1339:8080"
+    restart: unless-stopped
+
+  waf3:
+    container_name: l3ak-platform-protection-waf3
+    build:
+      context: .
+      dockerfile: Dockerfile.waf3
+    ports:
+      - "1340:8080"
+    restart: unless-stopped
+
+  waf4:
+    container_name: l3ak-platform-protection-waf4
+    build:
+      context: .
+      dockerfile: Dockerfile.waf4
+    ports:
+      - "1341:8080"
+    restart: unless-stopped
+
+  waf5:
+    container_name: l3ak-platform-protection-waf5
+    build:
+      context: .
+      dockerfile: Dockerfile.waf5
+    ports:
+      - "1342:8080"
+    restart: unless-stopped
+
+  waf6:
+    container_name: l3ak-platform-protection-waf6
+    build:
+      context: .
+      dockerfile: Dockerfile.waf6
+    ports:
+      - "1343:8080"
+    restart: unless-stopped

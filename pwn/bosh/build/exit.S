@@ -1,0 +1,8 @@
+.global _start
+
+_start:
+    .intel_syntax noprefix
+
+    mov rax, 60
+    xor rdi, rdi
+    syscall

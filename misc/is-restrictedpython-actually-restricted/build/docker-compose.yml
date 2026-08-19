@@ -1,0 +1,8 @@
+services:
+  is-restrictedpython-actually-restricted:
+    build:
+      context: .
+    privileged: true
+    ports:
+      - "1622:1622"
+    restart: unless-stopped

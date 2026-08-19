@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BuildFarm{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%236c5ce7' d='M12 2l8.66 5v10L12 22l-8.66-5V7z'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 24 24"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b7bff"/><stop offset="1" stop-color="#6c5ce7"/></linearGradient></defs><path fill="url(#g)" d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><path fill="#0a0d12" opacity=".25" d="M12 7l4.5 2.6v5.2L12 17.4l-4.5-2.6V9.6z"/></svg>
+      BuildFarm
+    </div>
+    {% block auth %}{% endblock %}
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

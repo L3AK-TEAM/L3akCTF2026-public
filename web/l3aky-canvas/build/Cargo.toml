@@ -1,0 +1,18 @@
+[package]
+name = "l3aky-canvas"
+version = "1.0.0"
+edition = "2021"
+
+[[bin]]
+name = "l3aky-canvas"
+path = "src/main.rs"
+
+[dependencies]
+tiny_http = "0.12"
+
+[profile.release]
+opt-level = 2
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

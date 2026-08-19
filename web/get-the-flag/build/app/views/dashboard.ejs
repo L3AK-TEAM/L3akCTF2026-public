@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard — SecureApp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #0a0a0a; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: #1a1a1a; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333; }
+    h1 { color: #00ff88; margin-bottom: 0.5rem; }
+    .role { color: #888; margin-bottom: 1.5rem; }
+    .nav { list-style: none; margin-bottom: 1.5rem; }
+    .nav li { margin-bottom: 0.5rem; }
+    .nav a { color: #00ff88; text-decoration: none; }
+    .nav a:hover { text-decoration: underline; }
+    .logout { display: inline-block; margin-top: 1rem; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome, <%= user.username %></h1>
+    <p class="role">Role: <%= user.role %></p>
+
+    <ul class="nav">
+      <li><a href="/account/change-password">Change Password</a></li>
+      <li><a href="/pages/create">Create Page</a></li>
+      <li><a href="/report">Report URL to Admin</a></li>
+      <li><a href="/flag">View Flag</a></li>
+    </ul>
+
+    <a href="/logout" class="logout">Logout</a>
+  </div>
+</body>
+</html>

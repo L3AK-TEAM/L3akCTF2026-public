@@ -1,0 +1,12 @@
+services:
+  northstar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: northstar-portal
+    ports:
+      - "3000:3000"
+    environment:
+      BOT_BROWSER_PATH: /usr/bin/chromium
+      FLAG: L3AK{fakeflag}
+    restart: unless-stopped

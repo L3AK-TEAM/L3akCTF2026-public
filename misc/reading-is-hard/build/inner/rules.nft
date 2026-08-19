@@ -1,0 +1,10 @@
+table ip jail {
+	chain block {
+		type filter hook output priority 0; policy accept;
+		oif "lo" drop
+		oif "eth0" ip daddr 10.0.0.0/8 accept
+		oif "eth0" ip daddr 172.16.0.0/12 accept
+		oif "eth0" ip daddr 192.168.0.0/16 accept
+		oif "eth0" drop
+	}
+}

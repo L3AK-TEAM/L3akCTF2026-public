@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Import manifest · BuildFarm{% endblock %}
+{% block page_title %}Import manifest{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Import a pipeline manifest</h1>
+    <div class="sub">Pull a manifest from a trusted mirror and schedule it on an agent</div>
+  </div>
+</div>
+
+<div class="grid cols-2">
+  <div class="card pad-lg">
+    <form id="import-form">
+      <div class="alert"></div>
+      <div class="field">
+        <label>Manifest URL</label>
+        <input class="input" name="url" placeholder="https://manifests.buildfarm.internal/acme/pipeline.json" required>
+        <div class="formnote">Only first-party mirrors are accepted. The orchestrator fetches the manifest and queues the job.</div>
+      </div>
+      {% if staff %}
+      <button class="btn btn-primary" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Import &amp; schedule
+      </button>
+      {% else %}
+      <button class="btn" type="button" disabled style="opacity:.6;cursor:not-allowed">Importing is limited to staff</button>
+      <div class="formnote">Your account is a member. Ask an organisation owner to import manifests on your behalf.</div>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="card pad-lg">
+    <h2 style="font-size:15px;margin-bottom:6px">Trusted mirrors</h2>
+    <p class="tiny">Manifests may only be imported from these first-party hosts.</p>
+    {% for m in mirrors %}
+    <div class="secret-row">
+      <span class="mono" style="color:var(--text)">{{ m }}</span>
+      <span class="badge success"><span class="bdot"></span>verified</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

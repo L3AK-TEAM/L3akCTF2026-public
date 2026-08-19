@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Artifacts · BuildFarm{% endblock %}
+{% block page_title %}Artifacts{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Artifacts</h1>
+    <div class="sub">Build outputs published by your pipelines</div>
+  </div>
+</div>
+
+{% if not staff %}
+<div class="card" style="margin-bottom:18px;border-color:rgba(215,164,41,0.3)">
+  <div class="flex gap-sm">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--queued)" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    <span class="muted">Downloading artifacts is limited to organisation staff. Listed paths are read-only for members.</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="padding:6px 4px">
+  <table class="table">
+    <thead><tr><th>Artifact</th><th>Project</th><th>Run</th><th>Size</th><th></th></tr></thead>
+    <tbody>
+      {% for a in artifacts %}
+      <tr class="row">
+        <td class="flex gap-sm">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5"/></svg>
+          <span class="mono" style="color:var(--text)">{{ a.name }}</span>
+        </td>
+        <td>{{ a.project }}</td>
+        <td class="mono"><a href="/runs/{{ a.run }}">#{{ a.run }}</a></td>
+        <td class="muted">{{ a.size }}</td>
+        <td class="right">
+          {% if staff %}
+          <a class="btn sm" href="/download/{{ a.path }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </a>
+          {% else %}
+          <span class="badge queued"><span class="bdot"></span>staff only</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

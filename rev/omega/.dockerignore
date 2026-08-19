@@ -1,0 +1,13 @@
+# VCS
+.git
+.gitignore
+
+# Author-only: never needed to build or run the challenge
+solution
+docs
+dist
+out
+LICENSE.txt
+TODO.txt
+README.md
+build/docker-compose.yml

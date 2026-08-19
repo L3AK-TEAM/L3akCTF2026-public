@@ -1,0 +1,10 @@
+services:
+  hashword:
+    build: .
+    image: hashword-web
+    ports:
+      - "8000:8000"
+    environment:
+      FLAG: "L3AK{if_you_played_that_right_you_shouldnt_have_had_to_brute_anything_longer_than_4_chars_at_a_time}"
+      BASE_URL: "http://localhost:8000"
+    restart: unless-stopped

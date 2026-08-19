@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} · BuildFarm{% endblock %}
+{% block page_title %}<span class="crumbs"><a href="/projects">Projects</a> / </span>{{ project.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1><span class="lang-dot lang-{{ project.language }}" style="width:13px;height:13px;margin-right:9px"></span>{{ project.name }}</h1>
+    <div class="sub">{{ project.repo }}</div>
+  </div>
+  <span class="badge {{ project.health }}" style="align-self:center"><span class="bdot"></span>{{ project.health }}</span>
+</div>
+
+<div class="card pad-lg">
+  <div class="kv">
+    <div class="item"><div class="k">Language</div><div class="v">{{ project.language }}</div></div>
+    <div class="item"><div class="k">Default branch</div><div class="v">{{ project.branch }}</div></div>
+    <div class="item"><div class="k">Visibility</div><div class="v">{{ project.visibility }}</div></div>
+    <div class="item"><div class="k">Health</div><div class="v">{{ project.health }}</div></div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Pipeline history</h2></div>
+<div class="card" style="padding:6px 4px">
+  {% if runs %}
+  <table class="table">
+    <thead><tr><th>Run</th><th>Status</th><th>Branch</th><th>Commit</th><th>Author</th><th>Duration</th><th>When</th></tr></thead>
+    <tbody>
+      {% for r in runs %}
+      <tr class="row">
+        <td class="mono"><a href="/runs/{{ r.id }}">#{{ r.id }}</a></td>
+        <td><span class="badge {{ r.status }}"><span class="bdot"></span>{{ r.status }}</span></td>
+        <td class="muted">{{ r.branch }}</td>
+        <td><span class="commit">{{ r.commit }}</span> <span class="muted tiny">{{ r.msg }}</span></td>
+        <td>{{ r.author }}</td>
+        <td class="muted">{{ r.duration }}</td>
+        <td class="muted">{{ r.when }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No runs yet for this project.</div>
+  {% endif %}
+</div>
+{% endblock %}

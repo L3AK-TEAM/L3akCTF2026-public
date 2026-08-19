@@ -1,0 +1,13 @@
+services:
+  workerd:
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - worker-scripts:/data/workers
+      - ./flag.txt:/flag.txt
+
+volumes:
+  worker-scripts:

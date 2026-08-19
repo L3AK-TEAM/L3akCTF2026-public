@@ -1,0 +1,21 @@
+http:
+  routers:
+    mlflow-api:
+      rule: "PathPrefix(`/api`) || PathPrefix(`/ajax-api`) || PathPrefix(`/model-versions`) || PathPrefix(`/graphql`)"
+      service: mlflow
+      middlewares:
+        - mlflow-auth
+    mlflow-ui:
+      rule: "PathPrefix(`/`)"
+      service: mlflow
+
+  middlewares:
+    mlflow-auth:
+      basicAuth:
+        usersFile: /tmp/users
+
+  services:
+    mlflow:
+      loadBalancer:
+        servers:
+          - url: "http://mlflow:5000"

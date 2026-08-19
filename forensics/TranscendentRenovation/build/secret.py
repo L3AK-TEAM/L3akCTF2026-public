@@ -1,0 +1,1 @@
+FLAG = 'L3AK{P4r4n0rm4l_P4r4ll3l_P47h5}'

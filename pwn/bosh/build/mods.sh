@@ -1,0 +1,5 @@
+./compile.sh cat.S cat "Print file. Usage: cat <file>"  
+./compile.sh echo.S echo "Print args to stdout. Usage: echo <text>"  
+./compile.sh exit.S exit "Exit the shell."  
+./compile.sh help.S help "Show help text." 
+./compile.sh ray.S ray "Simulate a cosmic ray, once per execution. Usage: ray <address to write in decimal> <byte value in decimal>"

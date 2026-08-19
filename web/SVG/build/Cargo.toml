@@ -1,0 +1,12 @@
+[package]
+name = "northstar-portal"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.9"
+html-escape = "0.2.13"
+serde = { version = "1.0.228", features = ["derive"] }
+tokio = { version = "1.52.3", features = ["macros", "process", "rt-multi-thread", "signal"] }
+uuid = { version = "1.23.1", features = ["serde", "v4"] }
+svg-hush = { path = "../svg-hush" }

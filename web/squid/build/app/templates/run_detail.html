@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Run #{{ run.id }} · BuildFarm{% endblock %}
+{% block page_title %}<span class="crumbs"><a href="/dashboard">Runs</a> / </span>#{{ run.id }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Run #{{ run.id }} · {{ run.project }}</h1>
+    <div class="sub">{{ run.msg }}</div>
+  </div>
+  <span class="badge {{ run.status }}" style="align-self:center"><span class="bdot"></span>{{ run.status }}</span>
+</div>
+
+<div class="card pad-lg" style="margin-bottom:18px">
+  <div class="kv">
+    <div class="item"><div class="k">Trigger</div><div class="v">{{ run.trigger }}</div></div>
+    <div class="item"><div class="k">Branch</div><div class="v">{{ run.branch }}</div></div>
+    <div class="item"><div class="k">Commit</div><div class="v"><span class="commit">{{ run.commit }}</span></div></div>
+    <div class="item"><div class="k">Author</div><div class="v">{{ run.author }}</div></div>
+    <div class="item"><div class="k">Duration</div><div class="v">{{ run.duration }}</div></div>
+    <div class="item"><div class="k">Started</div><div class="v">{{ run.when }}</div></div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Build log</h2><span class="muted tiny">agent · {{ run.project }}</span></div>
+<div class="logbox">
+<span class="ln">1</span>[buildfarm] agent online
+<span class="ln">2</span>[buildfarm] restoring toolchain cache ... <span class="ok">ok</span>
+<span class="ln">3</span>[buildfarm] resolving dependencies ... <span class="ok">ok</span>
+<span class="ln">4</span>[buildfarm] compiling sources ... <span class="ok">ok</span>
+<span class="ln">5</span>[buildfarm] running tests ... <span class="ok">42 passed</span>
+<span class="ln">6</span>[buildfarm] build {{ 'succeeded' if run.status != 'failed' else 'FAILED' }}
+</div>
+{% endblock %}

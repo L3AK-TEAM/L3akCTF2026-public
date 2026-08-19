@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Report URL — SecureApp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #0a0a0a; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: #1a1a1a; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333; }
+    h1 { color: #00ff88; margin-bottom: 0.5rem; text-align: center; }
+    p.desc { color: #888; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; }
+    label { display: block; margin-bottom: 0.3rem; color: #aaa; }
+    input[type="url"] { width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: #0a0a0a; border: 1px solid #333; color: #e0e0e0; border-radius: 4px; font-family: monospace; }
+    button { width: 100%; padding: 0.6rem; background: #00ff88; color: #0a0a0a; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: monospace; }
+    button:hover { background: #00cc6a; }
+    .result { margin-top: 1rem; padding: 0.8rem; border-radius: 4px; }
+    .result.success { background: #0a2a0a; border: 1px solid #00ff88; color: #00ff88; }
+    .result.error { background: #2a0a0a; border: 1px solid #ff4444; color: #ff4444; }
+    .back { display: inline-block; margin-top: 1rem; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Report URL</h1>
+    <p class="desc">Submit a page path for the admin to review.</p>
+    <form method="POST" action="/report">
+      <label>Page Path</label>
+      <input type="text" name="url" placeholder="/pages/your-page.html" required>
+      <button type="submit">Submit to Admin</button>
+    </form>
+    <% if (result) { %>
+      <div class="result <%= result.success ? 'success' : 'error' %>">
+        <% if (result.success) { %>
+          Admin has visited the page.
+        <% } else { %>
+          Error: <%= result.error %>
+        <% } %>
+      </div>
+    <% } %>
+    <a href="/dashboard" class="back">Back to Dashboard</a>
+  </div>
+</body>
+</html>

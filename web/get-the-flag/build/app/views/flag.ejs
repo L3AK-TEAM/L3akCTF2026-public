@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flag — SecureApp</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #0a0a0a; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: #1a1a1a; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333; text-align: center; }
+    h1 { color: #00ff88; margin-bottom: 1rem; }
+    .flag { background: #0a0a0a; padding: 1rem; border-radius: 4px; border: 1px solid #00ff88; color: #00ff88; font-size: 1.1rem; word-break: break-all; margin-bottom: 1rem; }
+    .denied { color: #ff4444; }
+    .back { display: inline-block; margin-top: 1rem; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <% if (flag) { %>
+      <h1>Congratulations!</h1>
+      <div class="flag"><%= flag %></div>
+    <% } else { %>
+      <h1 class="denied">Access Denied</h1>
+      <p class="denied">Only the admin can view the flag.</p>
+    <% } %>
+    <a href="/dashboard" class="back">Back to Dashboard</a>
+  </div>
+</body>
+</html>

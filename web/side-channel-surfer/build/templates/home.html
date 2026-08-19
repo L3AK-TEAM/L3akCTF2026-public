@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+    <style>
+        :root{ --bg:#0b1220; --card:#0f1724; --accent:#3b82f6; --text:#e6eef8; }
+        body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg),#071226);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
+        .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:2rem;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6);max-width:720px;text-align:center}
+        h1{margin:0 0 0.5rem 0;font-size:1.75rem;color:var(--accent)}
+        p{margin:0;color:rgba(230,238,248,0.85)}
+        .btn{display:inline-block;margin-top:1rem;padding:0.5rem 1rem;border-radius:8px;background:var(--accent);color:white;text-decoration:none;font-weight:600;box-shadow:0 6px 18px rgba(59,130,246,0.24)}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle or 'Welcome' }}</p>
+        <a class="btn" href="/search?id=1">View demo message</a>
+    </div>
+</body>
+</html>

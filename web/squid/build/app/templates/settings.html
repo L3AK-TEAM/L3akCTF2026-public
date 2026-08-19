@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Settings · BuildFarm{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Organisation settings</h1>
+    <div class="sub">{{ org.name }} · {{ org.plan }} · {{ org.region }}</div>
+  </div>
+</div>
+
+<div class="grid cols-2">
+  <div class="card pad-lg">
+    <h2 style="font-size:15px;margin-bottom:6px">Profile</h2>
+    <p class="tiny">How your account appears across BuildFarm.</p>
+    <div class="field"><label>Username</label><input class="input" value="{{ user.username }}" readonly></div>
+    <div class="field"><label>Role</label><input class="input" value="{{ user.role }}" readonly></div>
+    <div class="formnote">Roles are managed by your organisation owner.</div>
+  </div>
+
+  <div class="card pad-lg">
+    <h2 style="font-size:15px;margin-bottom:6px">Plan</h2>
+    <p class="tiny">Your current subscription and capacity.</p>
+    <div class="kv">
+      <div class="item"><div class="k">Plan</div><div class="v">{{ org.plan }}</div></div>
+      <div class="item"><div class="k">Region</div><div class="v">{{ org.region }}</div></div>
+      <div class="item"><div class="k">Agents</div><div class="v">{{ org.agents }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Pipeline secrets</h2><span class="muted tiny">injected by name · values masked</span></div>
+<div class="card pad-lg">
+  {% for s in secrets %}
+  <div class="secret-row">
+    <div>
+      <div class="mono" style="color:var(--text)">{{ s.name }}</div>
+      <div class="tiny muted">scope: {{ s.scope }} · updated {{ s.updated }}</div>
+    </div>
+    <div class="flex gap-sm">
+      <span class="secret-val">••••••••••••</span>
+      <span class="badge success"><span class="bdot"></span>active</span>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="formnote mt">Secrets are referenced in manifests as <code>${SECRET_NAME}</code> and resolved by the agent at run time. They are never written to the build workspace.</div>
+</div>
+{% endblock %}

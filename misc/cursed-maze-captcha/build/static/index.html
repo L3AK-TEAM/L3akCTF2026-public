@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Captcha</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main>
+      <button id="check" class="check" type="button">
+        <span>I am not a robot</span>
+        <span class="box" aria-hidden="true"></span>
+      </button>
+      <section id="captcha" class="captcha hidden" aria-label="captcha">
+        <div class="meta">
+          <span id="round">Round 1/100</span>
+          <span id="timer">5.0</span>
+        </div>
+        <div id="maze" class="maze"></div>
+        <div id="status" class="status"></div>
+        <button id="try-again" class="retry hidden" type="button">Try again</button>
+      </section>
+      <section id="success" class="success hidden" aria-label="completed captcha">
+        <div class="check checked">
+          <span>I am not a robot</span>
+          <span class="box animated-box" aria-hidden="true"></span>
+        </div>
+        <div id="flag" class="flag"></div>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

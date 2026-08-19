@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Projects · BuildFarm{% endblock %}
+{% block page_title %}Projects{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Projects</h1>
+    <div class="sub">{{ projects|length }} repositories connected to BuildFarm</div>
+  </div>
+  <button class="btn btn-primary" id="new-project-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New project
+  </button>
+</div>
+
+<div class="card pad-lg" id="new-project" style="display:none;margin-bottom:18px">
+  <h2 style="font-size:15px;margin-bottom:14px">Connect a repository</h2>
+  <form id="project-form">
+    <div class="alert err"></div>
+    <div class="grid cols-2">
+      <div class="field">
+        <label>Project name</label>
+        <input class="input" name="name" placeholder="payments-service" required>
+      </div>
+      <div class="field">
+        <label>Language</label>
+        <select class="input" name="language">
+          <option>TypeScript</option><option>Go</option><option>Java</option>
+          <option>Python</option><option>HCL</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Create project</button>
+  </form>
+</div>
+
+<div class="grid cols-2">
+  {% for p in projects %}
+  <a class="card proj" href="/projects/{{ p.id }}">
+    <div class="top">
+      <div class="name"><span class="lang-dot lang-{{ p.language }}"></span>{{ p.name }}</div>
+      <span class="badge {{ p.health }}"><span class="bdot"></span>{{ p.health }}</span>
+    </div>
+    <div class="repo">{{ p.repo }}</div>
+    <div class="meta">
+      <span>{{ p.language }}</span>
+      <span>{{ p.branch }}</span>
+      <span>{{ p.visibility }}</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('new-project-btn');
+    var panel = document.getElementById('new-project');
+    if (btn && panel) { btn.addEventListener('click', function () { panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; }); }
+  })();
+</script>
+{% endblock %}

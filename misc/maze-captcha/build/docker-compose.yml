@@ -1,0 +1,8 @@
+services:
+  maze:
+    build: .
+    image: maze-chall
+    container_name: maze-chall
+    ports:
+      - "1337:1337"
+    restart: unless-stopped

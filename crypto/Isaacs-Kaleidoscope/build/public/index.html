@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Isaac's Kaleidoscope</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Isaac's Kaleidoscope</h1>
+          <p id="challengeMeta">Loading challenge...</p>
+        </div>
+        <div class="status" id="statusBadge">Idle</div>
+      </header>
+
+      <section class="controls">
+        <label class="inputBlock">
+          <span>Message</span>
+          <textarea id="messageInput" rows="4" spellcheck="false" autocomplete="off"></textarea>
+        </label>
+
+        <div class="actions">
+          <button id="renderButton" type="button">Encrypt</button>
+          <button id="clearButton" type="button">Clear</button>
+        </div>
+
+        <dl class="metrics">
+          <div>
+            <dt>Input bytes</dt>
+            <dd id="inputBytes">-</dd>
+          </div>
+          <div>
+            <dt>Response</dt>
+            <dd id="serverStatus">-</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="gallery" id="gallery" aria-live="polite"></section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

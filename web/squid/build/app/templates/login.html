@@ -1,0 +1,19 @@
+{% extends "auth.html" %}
+{% block title %}Sign in · BuildFarm{% endblock %}
+{% block auth %}
+<h2>Welcome back</h2>
+<div class="sub">Sign in to your BuildFarm workspace</div>
+<form id="login-form" novalidate>
+  <div class="alert err"></div>
+  <div class="field">
+    <label>Username</label>
+    <input class="input" name="username" autocomplete="username" required>
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input class="input" name="password" type="password" autocomplete="current-password" required>
+  </div>
+  <button class="btn btn-primary" type="submit">Sign in</button>
+</form>
+<div class="auth-foot">New to BuildFarm? <a href="/register">Create an account</a></div>
+{% endblock %}

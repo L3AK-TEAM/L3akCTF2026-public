@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <style>
+        :root{ --bg:#0b1220; --card:#0f1724; --accent:#3b82f6; --text:#e6eef8; }
+        body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,var(--bg),#071226);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
+        .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:2rem;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6);max-width:360px;width:100%;text-align:center}
+        h1{margin:0 0 1rem 0;font-size:1.5rem;color:var(--accent)}
+        input{display:block;width:100%;box-sizing:border-box;margin:0.5rem 0;padding:0.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0b1220;color:var(--text)}
+        .btn{display:inline-block;margin-top:1rem;padding:0.5rem 1rem;border-radius:8px;background:var(--accent);color:white;text-decoration:none;font-weight:600;border:none;cursor:pointer}
+        .error{color:#f87171;margin-top:0.75rem}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Login</h1>
+        <form method="post">
+            <input type="text" name="username" placeholder="username" required>
+            <input type="password" name="password" placeholder="password" required>
+            <button class="btn" type="submit">Log in</button>
+        </form>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    </div>
+</body>
+</html>

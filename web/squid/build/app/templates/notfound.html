@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Not found · BuildFarm{% endblock %}
+{% block page_title %}Not found{% endblock %}
+{% block content %}
+<div class="card pad-lg">
+  <div class="empty">
+    <div style="font-size:40px;font-weight:700;letter-spacing:-0.03em;margin-bottom:6px">404</div>
+    <p>That {{ what }} could not be found, or you don't have access to it.</p>
+    <a class="btn btn-primary mt" href="/dashboard">Back to dashboard</a>
+  </div>
+</div>
+{% endblock %}

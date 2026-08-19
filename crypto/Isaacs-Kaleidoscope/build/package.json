@@ -1,0 +1,12 @@
+{
+  "name": "isaacs-kaleidoscope-fractal-block-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isaac's Kaleidoscope CTF challenge service.",
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

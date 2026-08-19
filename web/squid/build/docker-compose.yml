@@ -1,0 +1,21 @@
+services:
+  app:
+    build: ./app
+    environment:
+      - FLAG=${FLAG:-L3AK{n1ce_c4tch_u_owe_m3_a_b33r_1547859621}}
+    expose:
+      - "5000"
+    init: true
+    restart: unless-stopped
+    cpus: 2.0
+    mem_limit: 512m
+
+  nginx:
+    image: nginx:1.25-alpine
+    depends_on:
+      - app
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "13337:80"
+    restart: unless-stopped

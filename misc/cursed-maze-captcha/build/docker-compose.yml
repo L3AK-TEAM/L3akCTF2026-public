@@ -1,0 +1,8 @@
+services:
+  keyboard-maze:
+    build: .
+    image: keyboard-maze-captcha
+    container_name: keyboard-maze-captcha
+    ports:
+      - "1337:1337"
+    restart: unless-stopped

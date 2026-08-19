@@ -1,0 +1,10 @@
+services:
+  omega:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
+    container_name: omega
+    ports:
+      - "5000:5000"
+    privileged: true
+    restart: unless-stopped

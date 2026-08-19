@@ -1,0 +1,14 @@
+services:
+  bot:
+    build: ./bot          # uses ./bot/Dockerfile (no prebuilt image on Dockerhub)
+    restart: unless-stopped
+    # bot has no inbound port to publish; add a `ports:` block here if it ever does
+
+  seeder:
+    build: ./seeder       # uses ./seeder/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "6897"            # port used *internally* on the compose network
+    ports:
+      - "6897:6897/tcp"   # host:container — BitTorrent data
+      - "6897:6897/udp"   # host:container — DHT

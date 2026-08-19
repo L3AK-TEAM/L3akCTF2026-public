@@ -1,0 +1,20 @@
+{% extends "auth.html" %}
+{% block title %}Create account · BuildFarm{% endblock %}
+{% block auth %}
+<h2>Create your account</h2>
+<div class="sub">Spin up your first pipeline in minutes</div>
+<form id="register-form" novalidate>
+  <div class="alert err"></div>
+  <div class="field">
+    <label>Username</label>
+    <input class="input" name="username" autocomplete="username" required>
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input class="input" name="password" type="password" autocomplete="new-password" required>
+  </div>
+  <div class="formnote">Self-service accounts join as <strong>members</strong>. An organisation owner can promote you to staff afterwards.</div>
+  <button class="btn btn-primary" type="submit">Create account</button>
+</form>
+<div class="auth-foot">Already have an account? <a href="/login">Sign in</a></div>
+{% endblock %}

@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLAG=L3AK{1f_y0u_c4n_c0un7_y0u_c4n_l34k}

@@ -1,0 +1,15 @@
+services:
+  inner:
+    build: ./inner
+    privileged: true
+    expose:
+      - "5000"
+    restart: unless-stopped
+
+  outer:
+    build: ./outer
+    depends_on:
+      - inner
+    ports:
+      - "1337:1337"
+    restart: unless-stopped

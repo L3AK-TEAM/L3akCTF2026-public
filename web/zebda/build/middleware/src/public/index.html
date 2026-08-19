@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zebda · build service</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #1c2430;
+    --muted: #6b7684;
+    --line: #e4e7ec;
+    --accent: #2f6f4f;
+    --accent-ink: #ffffff;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --ok: #2f6f4f;
+    --bad: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  .bar {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 18px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .brand { font-weight: 650; font-size: 18px; letter-spacing: .2px; }
+  .brand span { color: var(--accent); }
+  .tag { color: var(--muted); font-size: 13px; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 20px 48px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 18px 20px;
+    margin-bottom: 18px;
+  }
+  h2 { margin: 0 0 4px; font-size: 15px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 0 0 5px; }
+  input[type=text], textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: #fbfcfd;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 11px;
+  }
+  textarea { font-family: var(--mono); font-size: 13px; min-height: 120px; resize: vertical; white-space: pre; }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row > div { flex: 1; }
+  button {
+    font: inherit;
+    font-weight: 550;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 0;
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:disabled { opacity: .55; cursor: default; }
+  .field { margin-bottom: 12px; }
+  .out {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: #0f141a;
+    color: #d7dde3;
+    border-radius: 7px;
+    padding: 12px 13px;
+    margin-top: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
+  }
+  .out.show { display: block; }
+  .pill { font-size: 11px; padding: 1px 8px; border-radius: 20px; font-family: var(--mono); }
+  .pill.ok { background: rgba(47,111,79,.15); color: var(--ok); }
+  .pill.bad { background: rgba(179,38,30,.12); color: var(--bad); }
+  code { font-family: var(--mono); background: #eef1f4; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  footer { max-width: 760px; margin: 0 auto; padding: 0 20px 32px; color: var(--muted); font-size: 12px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">Zebda<span>.</span></div>
+    <div class="tag">a small build service</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1 · Create a project</h2>
+    <p class="hint">Every build belongs to a project. Pick a slug.</p>
+    <div class="row">
+      <div>
+        <label for="slug">Project slug</label>
+        <input type="text" id="slug" value="demo" autocomplete="off" spellcheck="false">
+      </div>
+      <button id="createBtn">Create</button>
+    </div>
+    <div class="out" id="projectOut"></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Run a build</h2>
+    <p class="hint">Submit a YAML manifest. Ordinary projects may run <code>translate</code> jobs over HTTPS sources.</p>
+    <div class="field">
+      <label for="projectId">Project ID</label>
+      <input type="text" id="projectId" placeholder="create a project first…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="manifest">Manifest (YAML)</label>
+      <textarea id="manifest" spellcheck="false">job:
+  action: translate
+  source: https://example.com/dictionary.json</textarea>
+    </div>
+    <button id="buildBtn">Run build</button>
+    <div class="out" id="buildOut"></div>
+  </section>
+</main>
+
+<footer>Zebda · builds served warm, like koshary.</footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function render(el, ok, title, body) {
+    el.className = 'out show';
+    const pill = '<span class="pill ' + (ok ? 'ok' : 'bad') + '">' + title + '</span>';
+    el.innerHTML = pill + (body ? '\n\n' + body : '');
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  }
+
+  $('createBtn').addEventListener('click', async () => {
+    const btn = $('createBtn');
+    const out = $('projectOut');
+    const slug = $('slug').value;
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        $('projectId').value = data.id;
+        render(out, true, 'created', 'id:   ' + esc(data.id) + '\nslug: ' + esc(data.slug));
+      } else {
+        render(out, false, r.status + '', esc(data.error || 'error'));
+      }
+    } catch (e) {
+      render(out, false, 'error', esc(e.message));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $('buildBtn').addEventListener('click', async () => {
+    const btn = $('buildBtn');
+    const out = $('buildOut');
+    const id = $('projectId').value.trim();
+    if (!id) { render(out, false, 'error', 'Create a project first.'); return; }
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/projects/' + encodeURIComponent(id) + '/builds', {
+        method: 'POST',
+        headers: { 'content-type': 'text/yaml' },
+        body: $('manifest').value,
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        render(out, false, r.status + '', esc(data.error || 'error'));
+        return;
+      }
+      const ok = data.status === 'success';
+      let body = 'status:   ' + esc(data.status);
+      if (data.artifact) body += '\nartifact: ' + esc(data.artifact);
+      if (Array.isArray(data.logs) && data.logs.length) {
+        body += '\n\nlogs:\n' + data.logs.map((l) => '  ' + esc(l)).join('\n');
+      }
+      render(out, ok, ok ? 'success' : 'failed', body);
+    } catch (e) {
+      render(out, false, 'error', esc(e.message));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

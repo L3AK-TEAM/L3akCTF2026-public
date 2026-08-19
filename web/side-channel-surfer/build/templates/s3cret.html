@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secret</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.11/purify.min.js"></script>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        max-width: 480px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        background: #1a1b1e;
+        color: #ddd;
+    }
+
+    #app section {
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #222327;
+    }
+
+    textarea, input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        border: 1px solid #3a3b40;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        background: #1a1b1e;
+        color: #ddd;
+    }
+
+    textarea { min-height: 70px; resize: vertical; margin-bottom: 0.5rem; }
+
+    button {
+        padding: 0.4rem 0.9rem;
+        border: 1px solid #3a3b40;
+        border-radius: 6px;
+        background: #2b2c31;
+        color: #ddd;
+        cursor: pointer;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    button:hover { background: #35363c; }
+
+    #results { margin-top: 0.75rem; }
+
+    .result-row {
+        display: block;
+        border: 1px solid #333;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        color: #ddd;
+        text-decoration: none;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .result-row:hover { background: #2a2b2f; border-color: #45464c; }
+
+    #no-results { color: #777; font-size: 0.85rem; padding: 0.5rem 0; }
+
+    #status-msg {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #999;
+    }
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="create-section">
+    <textarea id="entry-box" placeholder="type a note..."></textarea>
+    <button id="save-btn" onclick="saveEntry()">save</button>
+  </section>
+
+  <section id="lookup-section">
+    <input type="text" id="query-box" placeholder="lookup..." oninput="loadEntries().then(r=>showEntries(r))">
+    <button id="clear-btn" onclick="clearEntries()">clear all</button>
+    <div id="results"></div>
+  </section>
+</div>
+
+<span id="status-msg"></span>
+
+<script>
+    const resultsBox = document.getElementById('results')
+    const entryBox = document.getElementById('entry-box')
+    const queryBox = document.getElementById('query-box')
+    const statusMsg = document.getElementById('status-msg')
+
+    let statusTimer;
+    function status(msg) {
+        statusMsg.textContent = msg
+        clearTimeout(statusTimer)
+        statusTimer = setTimeout(() => statusMsg.textContent = '', 2200)
+    }
+
+    function currentQuery() {
+        const q = queryBox.value.trim()
+        const urlQuery = (new URLSearchParams(window.location.search)).get('search')
+        return q ? q : (urlQuery ? urlQuery : '')
+    }
+
+    function escapeHtml(value) {
+        const clean = DOMPurify.sanitize(value);
+        return clean;
+    }
+
+    async function init() {
+        showEntries(await loadEntries())
+    }
+
+    async function loadEntries() {
+        const endpoint = '/notes?search=' + encodeURIComponent(currentQuery())
+        try {
+            const res = await fetch(endpoint)
+            return await res.json()
+        } catch { return [] }
+    }
+
+    function showEntries(entries) {
+        resultsBox.replaceChildren()
+        if (!entries.length) {
+            const none = document.createElement('div')
+            none.id = 'no-results'
+            none.textContent = 'nothing found'
+            resultsBox.appendChild(none)
+            return
+        }
+        for (const [i, entry] of entries.entries()) {
+            resultsBox.appendChild(createResultRow(entry, i))
+        }
+    }
+
+    function createResultRow(entry, i) {
+        const row = document.createElement('iframe')
+        row.className = 'result-row'
+        row.id = `result-${i}`
+        row.style.width = '100%'
+        row.style.minHeight = '2.2rem'
+        row.style.border = '0'
+        row.srcdoc = `<!doctype html><html><body style="margin:0;padding:0.5rem 0.75rem;box-sizing:border-box;background:transparent;color:#ddd;font:inherit;white-space:pre-wrap;">${escapeHtml(entry)}</body></html>`
+        return row
+    }
+
+    async function saveEntry() {
+        const value = entryBox.value.trim();
+        if (!value) return status('type something first')
+        try {
+            const res = await fetch('/notes?search=' + encodeURIComponent(currentQuery()), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ note: value })
+            })
+            if (!res.ok) { status('save failed'); return }
+            const entries = await res.json()
+            entryBox.value = ''
+            status('saved')
+            showEntries(entries)
+        } catch (e) { status('network error'); console.log(e) }
+    }
+
+    async function clearEntries() {
+        try {
+            const res = await fetch('/notes/clear', { method: 'POST' })
+            if (!res.ok) { status('clear failed'); return }
+            const entries = await res.json()
+            status('cleared')
+            showEntries(entries)
+        } catch (e) { status('network error'); console.log(e) }
+    }
+
+    entryBox.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) saveEntry();
+    })
+
+    init()
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · BuildFarm{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Pipelines</h1>
+    <div class="sub">Live status across {{ projects|length }} repositories · {{ org.agents }} agents online</div>
+  </div>
+  <a class="btn btn-primary" href="/import">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Import manifest
+  </a>
+</div>
+
+<div class="grid cols-4">
+  <div class="card stat">
+    <div class="k"><span class="dot" style="background:var(--success)"></span>Succeeded</div>
+    <div class="v">{{ counts.success }}</div>
+  </div>
+  <div class="card stat">
+    <div class="k"><span class="dot" style="background:var(--running)"></span>Running</div>
+    <div class="v">{{ counts.running }}</div>
+  </div>
+  <div class="card stat">
+    <div class="k"><span class="dot" style="background:var(--failed)"></span>Failed</div>
+    <div class="v">{{ counts.failed }}</div>
+  </div>
+  <div class="card stat">
+    <div class="k"><span class="dot" style="background:var(--queued)"></span>Queued</div>
+    <div class="v">{{ counts.queued }}</div>
+  </div>
+</div>
+
+<div class="section-title"><h2>Recent runs</h2><a class="muted tiny" href="/dashboard">Refresh</a></div>
+<div class="card" style="padding:6px 4px">
+  <table class="table">
+    <thead>
+      <tr><th>Run</th><th>Project</th><th>Status</th><th>Commit</th><th>Author</th><th>Duration</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      {% for r in runs %}
+      <tr class="row">
+        <td class="mono"><a href="/runs/{{ r.id }}">#{{ r.id }}</a></td>
+        <td>{{ r.project }}</td>
+        <td><span class="badge {{ r.status }}"><span class="bdot"></span>{{ r.status }}</span></td>
+        <td><span class="commit">{{ r.commit }}</span> <span class="muted tiny">{{ r.msg }}</span></td>
+        <td>{{ r.author }}</td>
+        <td class="muted">{{ r.duration }}</td>
+        <td class="muted">{{ r.when }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

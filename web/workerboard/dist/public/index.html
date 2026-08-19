@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Workerboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: 15px/1.45 Arial, Helvetica, sans-serif;
+      --bg: #111;
+      --panel: #181818;
+      --panel-alt: #141414;
+      --border: #343434;
+      --border-light: #484848;
+      --text: #e4e4e4;
+      --muted: #999;
+      --dim: #686868;
+      --link: #a8bed8;
+      --private: #d5ae72;
+    }
+
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; color: var(--text); background: var(--bg); }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 1px solid var(--link);
+      outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+
+    .site-header { border-bottom: 1px solid var(--border); background: #0d0d0d; }
+    .header-inner {
+      width: min(940px, calc(100% - 32px));
+      height: 52px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .header-left, .header-right, .nav { display: flex; align-items: center; gap: 18px; }
+    .brand { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+    .nav a { color: var(--muted); font-size: 13px; }
+    .nav a:hover, .nav a.current { color: var(--text); }
+    .session { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+    .session-name { color: var(--text); }
+    .admin-label { color: var(--private); font-size: 11px; text-transform: uppercase; }
+
+    .page { width: min(940px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 60px; }
+    .notice { margin: 0 0 16px; padding: 10px 12px; border: 1px solid #633; color: #efb0b0; background: #241515; }
+    .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 14px; }
+    .page-heading h1 { margin: 0; font-size: 22px; }
+    .page-heading-meta { color: var(--dim); font-size: 12px; }
+    .back-link { display: inline-block; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
+    .back-link:hover { color: var(--text); }
+
+    .button {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border: 1px solid var(--border-light);
+      border-radius: 3px;
+      color: var(--text);
+      background: #222;
+      cursor: pointer;
+    }
+    .button:hover:not(:disabled) { border-color: #666; background: #292929; }
+    .button:disabled { cursor: not-allowed; opacity: .4; }
+    .button-primary { border-color: #8296ad; color: #111; background: var(--link); font-weight: 700; }
+    .button-primary:hover:not(:disabled) { border-color: #bdd0e5; background: #b6cbe3; }
+    .button-quiet { min-height: 30px; padding: 0 9px; color: var(--muted); background: transparent; }
+    .button-like.active { color: var(--link); border-color: #62768d; }
+
+    .auth-wrap { min-height: calc(100vh - 150px); display: grid; place-items: center; }
+    .auth-panel { width: min(390px, 100%); border: 1px solid var(--border); background: var(--panel); }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+    .auth-tab { height: 43px; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: var(--panel-alt); cursor: pointer; }
+    .auth-tab.active { border-bottom-color: var(--link); color: var(--text); background: var(--panel); }
+    .auth-form { display: grid; gap: 15px; padding: 22px; }
+    .auth-form h1 { margin: 0 0 2px; font-size: 20px; }
+
+    .field { display: grid; gap: 6px; }
+    .field > span { color: var(--muted); font-size: 12px; }
+    .input {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 9px;
+      border: 1px solid var(--border-light);
+      border-radius: 2px;
+      color: var(--text);
+      background: #0f0f0f;
+    }
+
+    .post-list { border: 1px solid var(--border); background: var(--panel); }
+    .post-card + .post-card { border-top: 1px solid var(--border); }
+    .post-main { padding: 14px 15px 10px; }
+    .post-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+    .private-label { color: var(--private); }
+    .post-title { margin: 0; font-size: 17px; }
+    .post-footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px 11px; }
+    .post-stats { color: var(--dim); font-size: 12px; }
+    .post-actions { display: flex; gap: 7px; }
+    .empty-feed { padding: 45px 20px; text-align: center; color: var(--muted); }
+
+    .new-post { border: 1px solid var(--border); background: var(--panel); }
+    .post-form { display: grid; gap: 14px; padding: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
+    .privacy-toggle { height: 38px; display: flex; align-items: center; gap: 7px; color: var(--muted); cursor: pointer; }
+    .privacy-toggle input { accent-color: var(--link); }
+    .form-actions { display: flex; justify-content: flex-end; }
+
+    .code-editor { overflow: hidden; border: 1px solid var(--border-light); background: #0c0c0c; }
+    .code-toolbar { height: 31px; padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--dim); background: #151515; font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .code-locked, .code-body {
+      width: 100%;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      padding: 0 13px;
+      white-space: pre;
+      tab-size: 2;
+      font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .code-locked { overflow: hidden; color: #606060; background: #101010; user-select: none; }
+    .code-prefix { padding-top: 12px; }
+    .code-suffix { padding-bottom: 12px; }
+    .code-body { display: block; min-height: 250px; resize: vertical; color: #ccc; background: #0c0c0c; outline: none; }
+
+    .post-page { border: 1px solid var(--border); background: var(--panel); }
+    .post-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 15px; border-bottom: 1px solid var(--border); }
+    .post-page-title { margin: 0 0 5px; font-size: 21px; }
+    .post-page-meta { display: flex; gap: 8px; color: var(--muted); font-size: 12px; }
+    .post-page-actions { display: flex; align-items: center; gap: 9px; }
+    .post-frame { display: block; width: 100%; min-height: 620px; border: 0; background: white; }
+
+    @media (max-width: 600px) {
+      .header-inner, .page { width: calc(100% - 20px); }
+      .page { padding-top: 18px; }
+      .nav { gap: 11px; }
+      .form-row { grid-template-columns: 1fr; }
+      .post-footer, .post-page-header { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .post-frame { min-height: 480px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a class="brand" href="/">Workerboard</a>
+        <nav id="nav" class="nav" hidden>
+          <a id="home-link" href="/">Posts</a>
+          <a id="new-link" href="/new">New post</a>
+        </nav>
+      </div>
+      <div class="session">
+        <span id="identity"></span>
+        <span id="admin-label" class="admin-label" hidden>admin</span>
+        <button id="logout" class="button button-quiet" hidden>Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page">
+    <p id="message" class="notice" hidden></p>
+
+    <section id="auth" class="auth-wrap">
+      <div class="auth-panel">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-auth-tab="login">Log in</button>
+          <button class="auth-tab" data-auth-tab="register">Register</button>
+        </div>
+        <form id="login-form" class="auth-form">
+          <h1>Log in</h1>
+          <label class="field"><span>Username</span><input class="input" name="username" autocomplete="username" required></label>
+          <label class="field"><span>Password</span><input class="input" name="password" type="password" autocomplete="current-password" required></label>
+          <button class="button button-primary">Log in</button>
+        </form>
+        <form id="register-form" class="auth-form" hidden>
+          <h1>Register</h1>
+          <label class="field"><span>Username</span><input class="input" name="username" autocomplete="username" maxlength="32" required></label>
+          <label class="field"><span>Password</span><input class="input" name="password" type="password" autocomplete="new-password" maxlength="128" required></label>
+          <button class="button button-primary">Register</button>
+        </form>
+      </div>
+    </section>
+
+    <main id="home-page" hidden>
+      <div class="page-heading">
+        <h1>Posts</h1>
+        <a class="button button-primary" href="/new">New post</a>
+      </div>
+      <div id="posts" class="post-list"></div>
+    </main>
+
+    <main id="new-page" hidden>
+      <a class="back-link" href="/">← Posts</a>
+      <div class="page-heading"><h1>New post</h1></div>
+      <section class="new-post">
+        <form id="post-form" class="post-form">
+          <div class="form-row">
+            <label class="field"><span>Title</span><input class="input" name="title" maxlength="200" required></label>
+            <label class="privacy-toggle"><input name="is_private" type="checkbox"> Private</label>
+          </div>
+          <label class="field"><span>Worker</span></label>
+          <div class="code-editor">
+            <div class="code-toolbar">post.js — function body is editable</div>
+            <pre id="worker-prefix" class="code-locked code-prefix" aria-hidden="true">export default {
+  async fetch(request) {
+    const {
+      post_id,
+      author_name,
+      author_id,
+      viewer_id,
+      viewer_name,
+      like_ids,
+      is_private,
+    } = await request.json();</pre>
+            <textarea id="worker-body" class="code-body" name="worker_body" aria-label="Worker fetch function body" spellcheck="false" required>    return new Response(
+      `&lt;main style="font: 16px system-ui; padding: 2rem"&gt;
+         &lt;h1&gt;${author_name}'s post&lt;/h1&gt;
+         &lt;p&gt;Hello, ${viewer_name}.&lt;/p&gt;
+       &lt;/main&gt;`,
+      { headers: { "Content-Type": "text/html; charset=utf-8" } },
+    );</textarea>
+            <pre id="worker-suffix" class="code-locked code-suffix" aria-hidden="true">  },
+};</pre>
+          </div>
+          <div class="form-actions"><button class="button button-primary" type="submit">Publish</button></div>
+        </form>
+      </section>
+    </main>
+
+    <main id="post-page" hidden>
+      <a class="back-link" href="/">← Posts</a>
+      <article class="post-page">
+        <header class="post-page-header">
+          <div>
+            <h1 id="post-page-title" class="post-page-title"></h1>
+            <div class="post-page-meta"><span id="post-page-author"></span><span id="post-page-private" class="private-label" hidden>[private]</span></div>
+          </div>
+          <div class="post-page-actions"><span id="post-page-likes" class="post-stats"></span><button id="post-page-like" class="button button-quiet">Like</button></div>
+        </header>
+        <iframe id="post-frame" class="post-frame" title="Post" sandbox="allow-scripts allow-forms"></iframe>
+      </article>
+    </main>
+  </div>
+
+  <script>
+    const workerPrefix = document.querySelector('#worker-prefix').textContent + '\n';
+    const workerSuffix = '\n' + document.querySelector('#worker-suffix').textContent;
+    const message = document.querySelector('#message');
+    const auth = document.querySelector('#auth');
+    const nav = document.querySelector('#nav');
+    const identity = document.querySelector('#identity');
+    const adminLabel = document.querySelector('#admin-label');
+    const logout = document.querySelector('#logout');
+    const homePage = document.querySelector('#home-page');
+    const newPage = document.querySelector('#new-page');
+    const postPage = document.querySelector('#post-page');
+    let currentUser = null;
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: options.body ? { 'Content-Type': 'application/json', ...options.headers } : options.headers,
+      });
+      if (response.status === 204) return null;
+      const body = await response.json();
+      if (!response.ok) {
+        if (response.status === 401 && currentUser) location.reload();
+        throw new Error(body.error || `HTTP ${response.status}`);
+      }
+      return body;
+    }
+
+    function showError(error) {
+      const text = error?.message || '';
+      message.textContent = text;
+      message.hidden = !text;
+    }
+
+    function setActivePage(page) {
+      homePage.hidden = page !== homePage;
+      newPage.hidden = page !== newPage;
+      postPage.hidden = page !== postPage;
+      document.querySelector('#home-link').classList.toggle('current', page === homePage || page === postPage);
+      document.querySelector('#new-link').classList.toggle('current', page === newPage);
+    }
+
+    async function loadPosts() {
+      const posts = await api('/api/posts');
+      const container = document.querySelector('#posts');
+      container.replaceChildren();
+      if (!posts.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-feed';
+        empty.textContent = 'No posts yet.';
+        container.append(empty);
+        return;
+      }
+      for (const post of posts) {
+        const article = document.createElement('article');
+        article.className = 'post-card';
+        const main = document.createElement('div');
+        main.className = 'post-main';
+        const meta = document.createElement('div');
+        meta.className = 'post-meta';
+        const author = document.createElement('span');
+        author.textContent = post.author_name;
+        meta.append(author);
+        if (post.is_private) {
+          const privateLabel = document.createElement('span');
+          privateLabel.className = 'private-label';
+          privateLabel.textContent = '[private]';
+          meta.append(privateLabel);
+        }
+        const title = document.createElement('h2');
+        title.className = 'post-title';
+        title.textContent = post.title;
+        main.append(meta, title);
+
+        const footer = document.createElement('div');
+        footer.className = 'post-footer';
+        const stats = document.createElement('span');
+        stats.className = 'post-stats';
+        const likeCount = Object.keys(post.likes).length;
+        stats.textContent = `${likeCount} ${likeCount === 1 ? 'like' : 'likes'}`;
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        const canView = !post.is_private || post.author_id === currentUser.id || currentUser.is_admin;
+        const view = document.createElement(canView ? 'a' : 'button');
+        view.className = 'button button-quiet';
+        if (canView) view.href = `/posts/${post.id}`;
+        else view.disabled = true;
+        view.textContent = canView ? 'View' : 'Private';
+        const like = document.createElement('button');
+        like.className = `button button-quiet button-like${post.likes[currentUser.id] ? ' active' : ''}`;
+        like.textContent = post.likes[currentUser.id] ? 'Liked' : 'Like';
+        like.disabled = !canView || post.author_id === currentUser.id;
+        like.onclick = async () => {
+          try { await api(`/api/posts/${post.id}/like`, { method: 'POST' }); showError(); await loadPosts(); }
+          catch (error) { showError(error); }
+        };
+        actions.append(view, like);
+        footer.append(stats, actions);
+        article.append(main, footer);
+        container.append(article);
+      }
+    }
+
+    async function loadPost(postId) {
+      const post = await api(`/api/posts/${postId}`);
+      document.title = `${post.title} · Workerboard`;
+      document.querySelector('#post-page-title').textContent = post.title;
+      document.querySelector('#post-page-author').textContent = post.author_name;
+      document.querySelector('#post-page-private').hidden = !post.is_private;
+      document.querySelector('#post-frame').src = `/render/${post.id}`;
+      const likeButton = document.querySelector('#post-page-like');
+      const updateLikeState = value => {
+        const count = Object.keys(value.likes).length;
+        document.querySelector('#post-page-likes').textContent = `${count} ${count === 1 ? 'like' : 'likes'}`;
+        likeButton.textContent = value.likes[currentUser.id] ? 'Liked' : 'Like';
+        likeButton.classList.toggle('active', Boolean(value.likes[currentUser.id]));
+        likeButton.disabled = value.author_id === currentUser.id;
+      };
+      updateLikeState(post);
+      likeButton.onclick = async () => {
+        try {
+          const updated = await api(`/api/posts/${post.id}/like`, { method: 'POST' });
+          showError();
+          updateLikeState(updated);
+          document.querySelector('#post-frame').src = `/render/${post.id}`;
+        } catch (error) { showError(error); }
+      };
+    }
+
+    async function showCurrentRoute() {
+      const match = location.pathname.match(/^\/posts\/([0-9a-f-]+)$/);
+      if (location.pathname === '/new') {
+        setActivePage(newPage);
+      } else if (match) {
+        setActivePage(postPage);
+        await loadPost(match[1]);
+      } else {
+        setActivePage(homePage);
+        await loadPosts();
+      }
+    }
+
+    async function enterForum(user) {
+      currentUser = user;
+      identity.innerHTML = '<span class="session-name"></span>';
+      identity.querySelector('.session-name').textContent = user.username;
+      adminLabel.hidden = !user.is_admin;
+      logout.hidden = false;
+      nav.hidden = false;
+      auth.hidden = true;
+      await showCurrentRoute();
+    }
+
+    async function authenticate(path, form) {
+      const values = new FormData(form);
+      const user = await api(path, { method: 'POST', body: JSON.stringify(Object.fromEntries(values)) });
+      showError();
+      await enterForum(user);
+    }
+
+    document.querySelectorAll('[data-auth-tab]').forEach(tab => tab.onclick = () => {
+      document.querySelectorAll('[data-auth-tab]').forEach(item => item.classList.toggle('active', item === tab));
+      document.querySelector('#login-form').hidden = tab.dataset.authTab !== 'login';
+      document.querySelector('#register-form').hidden = tab.dataset.authTab !== 'register';
+      showError();
+    });
+    document.querySelector('#register-form').onsubmit = async event => {
+      event.preventDefault();
+      try { await authenticate('/api/register', event.currentTarget); } catch (error) { showError(error); }
+    };
+    document.querySelector('#login-form').onsubmit = async event => {
+      event.preventDefault();
+      try { await authenticate('/api/login', event.currentTarget); } catch (error) { showError(error); }
+    };
+    document.querySelector('#post-form').onsubmit = async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const submit = form.querySelector('[type="submit"]');
+      const values = new FormData(form);
+      submit.disabled = true;
+      submit.textContent = 'Publishing…';
+      try {
+        const post = await api('/api/posts', { method: 'POST', body: JSON.stringify({
+          title: values.get('title'),
+          script: workerPrefix + values.get('worker_body') + workerSuffix,
+          is_private: values.has('is_private'),
+        }) });
+        location.assign(`/posts/${post.id}`);
+      } catch (error) {
+        showError(error);
+        submit.disabled = false;
+        submit.textContent = 'Publish';
+      }
+    };
+    logout.onclick = async () => {
+      try { await api('/api/logout', { method: 'POST' }); location.assign('/'); }
+      catch (error) { showError(error); }
+    };
+
+    api('/api/me').then(enterForum).catch(() => {});
+  </script>
+</body>
+</html>

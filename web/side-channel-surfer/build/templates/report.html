@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report</title>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        max-width: 480px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        background: #1a1b1e;
+        color: #ddd;
+    }
+
+    section {
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #222327;
+    }
+
+    input[type="url"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        border: 1px solid #3a3b40;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        background: #1a1b1e;
+        color: #ddd;
+        margin-bottom: 0.5rem;
+    }
+
+    button {
+        padding: 0.4rem 0.9rem;
+        border: 1px solid #3a3b40;
+        border-radius: 6px;
+        background: #2b2c31;
+        color: #ddd;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    button:hover { background: #35363c; }
+
+    #status-msg {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #999;
+    }
+</style>
+</head>
+<body>
+<section>
+    <input type="url" id="url-box" placeholder="https://...">
+    <button id="report-btn" onclick="reportUrl()">report to admin</button>
+    <span id="status-msg"></span>
+</section>
+
+<script>
+    const urlBox = document.getElementById('url-box')
+    const statusMsg = document.getElementById('status-msg')
+
+    async function reportUrl() {
+        const value = urlBox.value.trim()
+        if (!value) { statusMsg.textContent = 'enter a url'; return }
+        try {
+            const res = await fetch('/api/bot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: value })
+            })
+            const data = await res.json()
+            if (!res.ok) { statusMsg.textContent = data.error || 'report failed'; return }
+            urlBox.value = ''
+            statusMsg.textContent = 'reported to admin'
+        } catch (e) {
+            statusMsg.textContent = 'network error'
+        }
+    }
+</script>
+</body>
+</html>

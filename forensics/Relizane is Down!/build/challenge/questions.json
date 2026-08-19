@@ -1,0 +1,115 @@
+{
+
+  "challenge_name": "Relizane is Down!",
+  "author": "Houssem0x1",
+  "notes": [
+    "All timestamps must be in UTC and should be in the following format: YYYY-MM-DD HH:MM:SS",
+	  "You have to answer all the questions with the required format to get the flag at the end."
+  ],
+
+  "flag": "L3AK{RMI179QH9DE7VLW8X74T136BXTUPZHIE}",
+
+
+  "questions": [
+    {
+      "question": "What was the last text copied by the user?",
+      "answer": "game over!",
+      "placeholder": "ex: life is good!"
+    },
+    {
+      "question": "When did the victim visit the malicious website?",
+      "answer": "2026-07-24 02:08:02",
+      "placeholder": "YYYY-MM-DD HH:MM:SS"
+    },
+    {
+      "question": "What is the the Mitre ATT&CK sub-technique ID relevant to the way the Threat actor gained execution on the victim's machine?",
+      "answer": "T1204.004",
+      "placeholder": "T****.***"
+    },
+    {
+      "question": "What is the filename of the legitimate software that the malware was disguised as?",
+      "answer": "FTK_Imager.exe",
+      "placeholder": "filename.ext"
+    },
+    {
+      "question": "What is the SHA-1 hash of the malware?",
+      "answer": "02acd0e7345573217eda62b36d816e7f97f61072"
+    },
+    {
+      "question": "Which Mitre ATT&CK stealth technique best describes the action of the identified in the previous question? ",
+      "answer": "Masquerading",
+      "placeholder": "MitreTechniqueName"
+
+    },
+    {
+      "question": "What is the username and the NT hash of the new admin account that the TA created as for their 1st persistence technique?",
+      "answer": "bella_20bd1816be8e256a939a58da452660d7",
+      "placeholder": "username_hash"
+    },
+	{
+      "question": "What is the the Mitre ATT&CK sub-technique ID relevant to the 2nd Persistence mechanism achieved by the TA?",
+      "answer": "T1547.004",
+      "placeholder": "T****.***"
+    },
+    {
+      "question": "MS Windows defender flagged the malicious file/object responsible for the 2nd persistence mechanism identified in the previous question. What is its threat tracking size in bytes?",
+      "answer": "7866880",
+      "placeholder": "1337"
+    },
+	{
+      "question": "the TA downloaded a RMM software on the system for further activities, what is the tool name and when it was downloaded? ",
+      "answer": "helpwire_2026-07-24 02:51:40",
+      "placeholder": "ToolName_YYYY-MM-DD HH:MM:SS"
+    },
+	{
+      "question": "How many bytes of data did the malware binary send to the C2 server in total?",
+      "answer": "139444",
+      "placeholder": "1337"
+    },
+    {
+      "question": "What is the total runtime duration of the malware in Ms (Milliseconds)?",
+      "answer": "2039990",
+      "placeholder": "1337"
+    },
+    {
+      "question": "The TA dropped a malicious script for data exfiltration, what is the script filename and what is the the IP address the data was being exfiltrated to?",
+      "answer": "up.ps1_106.107.1.148",
+      "placeholder": "filename.ext_IP",
+      "hint": "Not Necessarly the same as execution phase IP address"
+    },
+	 {
+      "question": "What is the execution/launch timestamp of the exfiltration script identified in the previous question?",
+      "answer": "2026-07-24 03:16:02",
+      "placeholder": "YYYY-MM-DD HH:MM:SS"
+    },
+	{
+      "question": "Recovery procedure is documented in a RTF document, what is the last name of document author and what he advises as first recovery step?",
+      "answer": "Zakrout_take a deep breath",
+      "placeholder": "LastName_FirstRecoveryStepString"
+    },
+    {
+      "question": "As for anti-forensics, When did the TA clear the event logs?",
+      "answer": "2026-07-24 03:35:10",
+      "placeholder": "YYYY-MM-DD HH:MM:SS"
+    },
+    {
+      "question": "Besides data exfiltration, the TA deployed a ransomware at the end, what is the new extension of the encrypted files?",
+      "answer": ".akira",
+      "placeholder": ".ext"
+    },
+    {
+      "question": "Late after the attack, the victim received a message from his work colleague alerting him that his machine is being compromised. What is the name of this colleague?",
+      "answer": "houari",
+      "placeholder": "name"
+    },
+    {
+      "question": "What is the employee's role on the company, and what is his badge number?",
+      "answer": "Stupid_0x1337",
+      "placeholder": "Role_BadgeNumber"
+    },
+    {
+      "question": "Based on the IOCs, which framework serves as the C2 on this incident?",
+      "answer": "caldera"
+    }
+  ]
+}

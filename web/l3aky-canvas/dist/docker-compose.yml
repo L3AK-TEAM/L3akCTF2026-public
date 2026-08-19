@@ -1,0 +1,11 @@
+services:
+  l3aky-canvas:
+    build: .
+    image: l3aky-canvas
+    container_name: l3aky-canvas
+    ports:
+      - "${HOST_PORT:-1337}:8000"
+    environment:
+      PIXEL_COOLDOWN: "${PIXEL_COOLDOWN:-60}"
+      CLIENT_IP_HEADER: "${CLIENT_IP_HEADER:-}"
+    restart: unless-stopped

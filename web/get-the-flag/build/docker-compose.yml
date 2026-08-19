@@ -1,0 +1,11 @@
+services:
+  app:
+    build: ./app
+    environment:
+      - FLAG=${FLAG:-L3AK{m3th0d_0v3rr1d3_csrf_byp4ss_g0_brrrr}}
+    ports:
+      - "13337:3000"
+    init: true
+    restart: unless-stopped
+    cpus: 2.0
+    mem_limit: 512m

@@ -1,0 +1,17 @@
+services:
+  traefik:
+    image: traefik:v3.7.9
+    restart: unless-stopped
+    entrypoint: ["sh", "/entrypoint.sh"]
+    ports:
+      - "8080:80"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/entrypoint.sh:/entrypoint.sh:ro
+
+  mlflow:
+    build: ./mlflow
+    restart: unless-stopped
+    expose:
+      - "5000"

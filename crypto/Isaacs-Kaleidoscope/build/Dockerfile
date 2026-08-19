@@ -1,0 +1,11 @@
+FROM node:22-alpine
+
+WORKDIR /app
+COPY . .
+
+ENV PORT=8767
+ENV MAX_INPUT_BYTES=200
+ENV IMAGE_SIZE=240
+EXPOSE 8767
+
+CMD ["node", "server.cjs"]

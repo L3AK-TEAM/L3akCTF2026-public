@@ -1,0 +1,339 @@
+// Command genpuzzle writes hashword/puzzle.go: the grid geometry plus the
+// expected digest for every clue. It is the Go equivalent of the key-generation
+// block in meow.py.
+//
+//	go run . -out ../../hashword/puzzle.go
+//	go run . -fingerprint
+//
+// This program is deliberately self-contained and shares no code with genflag,
+// so the two can be shipped, copied or withheld independently. The cost of that
+// is a duplicated board and hash: see -fingerprint.
+package main
+
+import (
+	"bytes"
+	"encoding/binary"
+	"encoding/hex"
+	"flag"
+	"fmt"
+	"go/format"
+	"log"
+	"math/bits"
+	"os"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+)
+
+// iterations must match verifyAnswer in hashword/main.go, which hashes
+// `iterations + num` times. If the two disagree, no answer will ever verify.
+const iterations = 100000
+
+const Size = 21
+
+// solution is the finished board. A space is a blocked square.
+var solution = [Size]string{
+	"L3AK{N otTheF lagLmao",
+	"Crossw ;lolno abcdefg",
+	"meowmeowmeowmeowmeowm",
+	"M4yb3_s0m3_0f__t h3se",
+	"   __willM3a n_sMt   ",
+	"h_IDk.gu  essC  TF_:p",
+	"woofwoofwoofwoofw oof",
+	"if_th e_flag_says_its",
+	"wrong  trya ppen ding",
+	"_mode l_nam e_$$0000 ",
+	"45292/67==676 <<00111",
+	"   all_l  0w3rc 01100",
+	"ase_like_ clau  01111",
+	"de-op us-5_or_ g01111",
+	"pt- 5.6-so l _&? 0101",
+	"mreoww  ^#^  ^^#00000",
+	" ***mrrrp<THXFO>^^   ",
+	"~~~~ ---!<RPLAY>WHOAI",
+	"wecarrytheflame T_ISt",
+	"^***^xyz  INGME>heCor",
+	"^***^zyx  OW:3c>n3r!}",
+}
+
+func main() {
+	out := flag.String("out", "", "file to write (default stdout)")
+	iter := flag.Int("iterations", iterations, "hash rounds; must match verifyAnswer")
+	fp := flag.Bool("fingerprint", false, "print the board fingerprint and exit")
+	flag.Parse()
+
+	log.SetFlags(0)
+	log.SetPrefix("genpuzzle: ")
+
+	if *fp {
+		fmt.Println(fingerprint())
+		return
+	}
+
+	entries := buildEntries()
+	log.Printf("board %s, %d clues, %d rounds each", fingerprint(), len(entries), *iter)
+
+	start := time.Now()
+	digests := digestAll(entries, *iter)
+	log.Printf("hashed in %s", time.Since(start).Round(time.Millisecond))
+
+	src, err := format.Source(render(entries, digests))
+	if err != nil {
+		log.Fatalf("generated source did not parse: %v", err)
+	}
+
+	if *out == "" {
+		os.Stdout.Write(src)
+		return
+	}
+	if err := os.WriteFile(*out, src, 0o644); err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("wrote %s (%d bytes)", *out, len(src))
+}
+
+// fingerprint identifies the board. genflag computes it the same way, so the
+// build script can refuse to seal a flag against a board that has drifted from
+// the one the digests were built from.
+func fingerprint() string {
+	h := Sum([]byte(boardChars()))
+	return hex.EncodeToString(h[:6])
+}
+
+func boardChars() string {
+	return strings.ReplaceAll(strings.Join(solution[:], ""), " ", "")
+}
+
+func blocked(x, y int) bool { return solution[y][x] == ' ' }
+
+type entry struct {
+	Num    int
+	X, Y   int
+	Across bool
+	Answer string
+}
+
+// buildEntries numbers the grid the way a crossword is numbered: scan in
+// reading order, taking the next number whenever a square starts a word. The
+// game derives the identical numbering from the layout alone.
+func buildEntries() []entry {
+	var out []entry
+	num := 0
+
+	for y := range Size {
+		for x := range Size {
+			if blocked(x, y) {
+				continue
+			}
+			startsAcross := x == 0 || blocked(x-1, y)
+			startsDown := y == 0 || blocked(x, y-1)
+			if !startsAcross && !startsDown {
+				continue
+			}
+			num++
+			if startsAcross {
+				out = append(out, entry{Num: num, X: x, Y: y, Across: true, Answer: read(x, y, true)})
+			}
+			if startsDown {
+				out = append(out, entry{Num: num, X: x, Y: y, Across: false, Answer: read(x, y, false)})
+			}
+		}
+	}
+
+	return out
+}
+
+func read(x, y int, across bool) string {
+	var b strings.Builder
+	for x < Size && y < Size && !blocked(x, y) {
+		b.WriteByte(solution[y][x])
+		if across {
+			x++
+		} else {
+			y++
+		}
+	}
+	return b.String()
+}
+
+// digest repeatedly hashes an answer, exactly as verifyAnswer does.
+func digest(e entry, iter int) []byte {
+	c := "D"
+	if e.Across {
+		c = "A"
+	}
+
+	h := []byte(e.Answer)
+	for i := range iter + e.Num {
+		a := Sum(append(fmt.Appendf(nil, "%d%s:%d", e.Num, c, i), h...))
+		h = a[:]
+	}
+	return h
+}
+
+// digestAll spreads the clues over the available cores; each is a few hundred
+// thousand compressions and they are entirely independent.
+func digestAll(entries []entry, iter int) [][]byte {
+	digests := make([][]byte, len(entries))
+
+	var wg sync.WaitGroup
+	work := make(chan int)
+
+	for range runtime.NumCPU() {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := range work {
+				digests[i] = digest(entries[i], iter)
+			}
+		}()
+	}
+
+	for i := range entries {
+		work <- i
+	}
+	close(work)
+	wg.Wait()
+
+	return digests
+}
+
+func render(entries []entry, digests [][]byte) []byte {
+	var b bytes.Buffer
+
+	fmt.Fprintf(&b, "// Code generated by gen/genpuzzle. DO NOT EDIT.\n\n")
+	fmt.Fprintf(&b, "package main\n\n")
+
+	fmt.Fprintf(&b, "var layout = [Size]string{\n")
+	for _, row := range solution {
+		var g strings.Builder
+		for _, ch := range row {
+			if ch == ' ' {
+				g.WriteByte('#')
+			} else {
+				g.WriteByte('.')
+			}
+		}
+		fmt.Fprintf(&b, "\t%q,\n", g.String())
+	}
+	fmt.Fprintf(&b, "}\n\n")
+
+	writeMap(&b, "acrossAnswers", entries, digests, true)
+	writeMap(&b, "downAnswers", entries, digests, false)
+
+	return b.Bytes()
+}
+
+func writeMap(b *bytes.Buffer, name string, entries []entry, digests [][]byte, across bool) {
+	fmt.Fprintf(b, "var %s = map[int][]byte{\n", name)
+	for i, e := range entries {
+		if e.Across != across {
+			continue
+		}
+		fmt.Fprintf(b, "\t%d: {", e.Num)
+		for j, v := range digests[i] {
+			if j > 0 {
+				b.WriteString(", ")
+			}
+			fmt.Fprintf(b, "0x%02x", v)
+		}
+		b.WriteString("},\n")
+	}
+	fmt.Fprintf(b, "}\n\n")
+}
+
+// ---------------------------------------------------------------------------
+// The tweaked hash. This must stay identical to sum/compress in
+// hashword/main.go: the rotation below is 26 where real SHA-256 uses 25, and if
+// the two ever disagree every generated digest is wrong.
+// ---------------------------------------------------------------------------
+
+var k = [64]uint32{
+	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+	0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+	0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+	0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+	0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+	0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+	0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+	0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+	0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+	0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+	0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+	0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+	0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+	0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+}
+
+var iv = [8]uint32{
+	0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+	0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+}
+
+func compress(h *[8]uint32, block []byte) {
+	var w [64]uint32
+	for i := range 16 {
+		w[i] = binary.BigEndian.Uint32(block[i*4:])
+	}
+	for i := 16; i < 64; i++ {
+		s0 := bits.RotateLeft32(w[i-15], -7) ^ bits.RotateLeft32(w[i-15], -18) ^ (w[i-15] >> 3)
+		s1 := bits.RotateLeft32(w[i-2], -17) ^ bits.RotateLeft32(w[i-2], -19) ^ (w[i-2] >> 10)
+		w[i] = w[i-16] + s0 + w[i-7] + s1
+	}
+
+	a, b, c, d, e, f, g, hh := h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]
+
+	for i := range 64 {
+		s1 := bits.RotateLeft32(e, -6) ^ bits.RotateLeft32(e, -11) ^ bits.RotateLeft32(e, -26)
+		ch := (e & f) ^ (^e & g)
+		t1 := hh + s1 + ch + k[i] + w[i]
+
+		s0 := bits.RotateLeft32(a, -2) ^ bits.RotateLeft32(a, -13) ^ bits.RotateLeft32(a, -22)
+		maj := (a & b) ^ (a & c) ^ (b & c)
+		t2 := s0 + maj
+
+		hh, g, f, e, d, c, b, a = g, f, e, d+t1, c, b, a, t1+t2
+	}
+
+	h[0] += a
+	h[1] += b
+	h[2] += c
+	h[3] += d
+	h[4] += e
+	h[5] += f
+	h[6] += g
+	h[7] += hh
+}
+
+func Sum(data []byte) [32]byte {
+	n := len(data)
+
+	h := iv
+	for len(data) >= 64 {
+		compress(&h, data[:64])
+		data = data[64:]
+	}
+
+	var tail [128]byte
+	copy(tail[:], data)
+	tail[len(data)] = 0x80
+
+	padLen := 64
+	if len(data) >= 56 {
+		padLen = 128
+	}
+	binary.BigEndian.PutUint64(tail[padLen-8:], uint64(n)*8)
+
+	for i := 0; i < padLen; i += 64 {
+		compress(&h, tail[i:i+64])
+	}
+
+	var out [32]byte
+	for i, v := range h {
+		binary.BigEndian.PutUint32(out[i*4:], v)
+	}
+	return out
+}
